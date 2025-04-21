@@ -1,31 +1,22 @@
-module "vpc" {
-  source                  = "./modules/vpc"
-  vpc_cidr                = var.vpc_cidr
-  vpc_name                = var.vpc_name
-  public_subnet_cidr      = var.public_subnet_cidr
-  public_subnet_az        = var.public_subnet_az
-  private_subnet_cidr     = var.private_subnet_cidr
-  private_subnet_az       = var.private_subnet_az
-  public_db_subnet_cidr   = var.public_db_subnet_cidr
-  public_db_subnet_az     = var.public_db_subnet_az
+provider "aws" {
+  region = "ap-south-1"
 }
 
-module "security_group" {
-  source = "./modules/security_group"
-  vpc_id = module.vpc.vpc_id
+module "grse_vpc" {
+  source = "./modules/vpc"
+
+  vpc_name = "GRSE-vpc"
+  vpc_cidr = "10.0.0.0/16"
+
+  public_subnets = {
+    "ap-south-1a" = "10.0.1.0/24"
+    "ap-south-1b" = "10.0.3.0/24"
+  }
+
+  private_subnets = {
+    "ap-south-1a" = "10.0.2.0/24"
+    "ap-south-1b" = "10.0.4.0/24"
+  }
 }
 
-module "ec2_instances" {
-  source                = "./modules/ec2"
-  vpc_id                = module.vpc.vpc_id
-  api_server_1_sg_id    = module.security_group.api_server_1_sg_id
-  api_server_2_sg_id    = module.security_group.api_server_2_sg_id
-  web_db_server_sg_id   = module.security_group.web_db_server_sg_id
 
-  api_server_1_ami      = var.api_server_1_ami
-  api_server_2_ami      = var.api_server_2_ami
-  web_db_server_ami     = var.web_db_server_ami
-
-  api_servers_key_name  = var.api_servers_key_name
-  web_db_key_name       = var.web_db_key_name
-}
