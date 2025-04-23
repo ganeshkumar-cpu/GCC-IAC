@@ -1,62 +1,47 @@
-resource "aws_launch_template" "lt" {
-  name_prefix   = "${var.name}-lt"
-  image_id      = "ami-0522ab6e1ddcc7055"  # Example AMI
+resource "aws_launch_template" "this" {
+  name_prefix   = "${var.instance_name}-lt-"
+  image_id      = var.ami
   instance_type = var.instance_type
-  key_name      = "GRSE-key"
-  vpc_security_group_ids = var.security_group_ids
+  key_name      = var.key_name
 
-  network_interfaces {
-    associate_public_ip_address = true
-    security_groups = [aws_security_group.sg.id]
-  }
+  vpc_security_group_ids = var.security_group_ids
 
   block_device_mappings {
     device_name = "/dev/xvda"
     ebs {
-      volume_size = 50
+      volume_size = var.root_volume_size
       volume_type = "gp3"
+    }
+  }
+
+  tag_specifications {
+    resource_type = "instance"
+
+    tags = {
+      Name = var.instance_name
     }
   }
 }
 
-resource "aws_autoscaling_group" "asg" {
-  name                      = "${var.name}-asg"
-  max_size                  = 1
-  min_size                  = 1
+resource "aws_autoscaling_group" "this" {
+  name                      = "${var.instance_name}-asg"
   desired_capacity          = var.desired_capacity
+  min_size                  = var.min_size
+  max_size                  = var.max_size
   vpc_zone_identifier       = var.subnet_ids
   launch_template {
-    id      = aws_launch_template.lt.id
+    id      = aws_launch_template.this.id
     version = "$Latest"
   }
+
+  tag {
+    key                 = "Name"
+    value               = var.instance_name
+    propagate_at_launch = true
+  }
+
   lifecycle {
     create_before_destroy = true
   }
 }
 
-resource "aws_security_group" "sg" {
-  name        = "${var.name}-sg"
-  description = "${var.environment} security group"
-  vpc_id      = var.vpc_id
-
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
