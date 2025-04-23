@@ -1,33 +1,41 @@
-resource "aws_instance" "this" {
-  ami                         = var.ami
-  instance_type               = var.instance_type
-  key_name                    = var.key_name
-  vpc_security_group_ids      = var.security_group_ids
-  associate_public_ip_address = true
 
-  root_block_device {
-    volume_size = var.root_volume_size
-    volume_type = "gp3"
-  }
+resource "aws_lb" "main" {
+  name               = var.lb_name
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = var.security_groups
+  subnets            = var.subnet_ids
+  enable_deletion_protection = false
+  enable_cross_zone_load_balancing = true
 
   tags = {
-    Name = var.instance_name
+    Name = var.lb_name
   }
 }
 
-resource "aws_ebs_volume" "this" {
-  availability_zone = aws_instance.this.availability_zone
-  size              = var.ebs_volume_size
-  type              = "gp3"
+resource "aws_lb_target_group" "main" {
+  name     = "${var.lb_name}-tg"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = var.vpc_id
 
-  tags = {
-    Name = "${var.instance_name}-ebs"
+  health_check {
+    path = "/"
+    port = "80"
   }
 }
 
-resource "aws_volume_attachment" "this" {
-  device_name = "/dev/sdf"
-  volume_id   = aws_ebs_volume.this.id
-  instance_id = aws_instance.this.id
+resource "aws_lb_listener" "main" {
+  load_balancer_arn = aws_lb.main.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    target_group_arn = aws_lb_target_group.main.arn
+    type             = "forward"
+  }
 }
 
+~
+~
+~
