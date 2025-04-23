@@ -3,12 +3,9 @@ provider "aws" {
 }
 
 module "vpc" {
-  source = "terraform-aws-modules/vpc/aws"
-  name   = "my-vpc"
-  cidr   = "10.0.0.0/16"
-  azs    = ["ap-south-1a", "ap-south-1b", "ap-south-1c"]
-  private_subnets = ["10.0.1.0/24", "10.0.2.0/24"]
-  public_subnets  = ["10.0.101.0/24", "10.0.102.0/24"]
+  source      = "./modules/vpc"
+  cidr_block  = "10.0.0.0/16"
+  vpc_name    = "GRSE-VPC"
 }
 
 module "dev_sg" {
@@ -86,29 +83,4 @@ module "dev_db" {
   reader_instance_type = "db.r5.large"
   writer_az            = "ap-south-1a"
   reader_az            = "ap-south-1b"
-  db_subnet_group      = module.vpc.db_subnet_group
-  security_group_ids   = [module.db_sg.id]
-}
-
-module "prod_db" {
-  source               = "./modules/aurora"
-  name                 = "prod-db"
-  engine_version       = "8.0.mysql_aurora.3.04.0"
-  db_name              = "proddb"
-  master_username      = "admin"
-  master_password      = var.prod_db_password
-  writer_instance_type = "db.r5.large"
-  reader_enabled       = false
-  writer_az            = "ap-south-1a"
-  db_subnet_group      = module.vpc.db_subnet_group
-  security_group_ids   = [module.db_sg.id]
-}
-
-output "dev_alb_dns_name" {
-  value = module.dev_alb.dns_name
-}
-
-output "prod_alb_dns_name" {
-  value = module.prod_alb.dns_name
-}
-
+  db_subnet_group      = module.vpc.db_sub
