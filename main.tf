@@ -10,6 +10,7 @@ module "prod_instance" {
   vpc_id               = var.vpc_id
   instance_type        = "m6a.xlarge"
   desired_capacity     = 1
+  security_group_ids   = [module.prod_sg.security_group_id]
 }
 
 module "dev_instance" {
@@ -20,6 +21,7 @@ module "dev_instance" {
   vpc_id               = var.vpc_id
   instance_type        = "t3.micro"
   desired_capacity     = 1
+  security_group_ids   = [module.prod_sg.security_group_id]
 }
 
 module "prod_db" {
