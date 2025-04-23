@@ -1,13 +1,13 @@
-variable "vpc_id" {}
-variable "public_subnet_ids" {
-  type = list(string)
-}
-variable "db_subnet_ids" {
-  type = list(string)
-}
+# variables.tf
 variable "prod_db_password" {
-  sensitive = true
+  description = "Password for the production Aurora database"
+  type        = string
+  sensitive   = true
 }
+
 variable "dev_db_password" {
-  sensitive = true
+  description = "Password for the development Aurora database"
+  type        = string
+  sensitive   = true
 }
+
