@@ -1,26 +1,20 @@
 variable "dev_ami" {
-  description = "AMI ID for the dev server"
+  description = "AMI for development EC2 instances"
   type        = string
 }
 
 variable "prod_ami" {
-  description = "AMI ID for the prod server"
+  description = "AMI for production EC2 instances"
   type        = string
 }
 
 variable "key_name" {
-  description = "SSH Key name"
+  description = "SSH key name for EC2 instances"
   type        = string
 }
 
 variable "dev_db_password" {
-  description = "Database password for dev environment"
-  type        = string
-  sensitive   = true
-}
-
-variable "prod_db_password" {
-  description = "Database password for prod environment"
+  description = "Password for the dev database"
   type        = string
   sensitive   = true
 }
