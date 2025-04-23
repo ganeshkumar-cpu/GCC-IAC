@@ -1,20 +1,13 @@
-variable "dev_ami" {
-  description = "AMI for development EC2 instances"
-  type        = string
+variable "vpc_id" {}
+variable "public_subnet_ids" {
+  type = list(string)
 }
-
-variable "prod_ami" {
-  description = "AMI for production EC2 instances"
-  type        = string
+variable "db_subnet_ids" {
+  type = list(string)
 }
-
-variable "key_name" {
-  description = "SSH key name for EC2 instances"
-  type        = string
+variable "prod_db_password" {
+  sensitive = true
 }
-
 variable "dev_db_password" {
-  description = "Password for the dev database"
-  type        = string
-  sensitive   = true
+  sensitive = true
 }
