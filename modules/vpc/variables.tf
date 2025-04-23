@@ -9,3 +9,19 @@ variable "vpc_name" {
   type        = string
   default     = "GRSE-VPC"
 }
+
+# Define variables for subnets and AZs
+variable "public_subnet_cidrs" {
+  description = "List of CIDR blocks for public subnets"
+  type        = list(string)
+}
+
+variable "private_subnet_cidrs" {
+  description = "List of CIDR blocks for private subnets"
+  type        = list(string)
+}
+
+variable "azs" {
+  description = "List of availability zones"
+  type        = list(string)
+}
