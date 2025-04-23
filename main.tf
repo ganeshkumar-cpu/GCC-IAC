@@ -84,3 +84,18 @@ module "dev_db" {
   writer_az            = "ap-south-1a"
   reader_az            = "ap-south-1b"
   db_subnet_group      = module.vpc.db_sub
+
+module "prod_db" {
+  source               = "./modules/aurora"
+  name                 = "prod-db"
+  engine_version       = "8.0.mysql_aurora.3.04.0"
+  db_name              = "proddb"
+  master_username      = "admin"
+  master_password      = var.prod_db_password
+  writer_instance_type = "db.r5.large"
+  reader_enabled       = true
+  reader_instance_type = "db.r5.large"
+  writer_az            = "ap-south-1a"
+  reader_az            = "ap-south-1b"
+  db_subnet_group      = module.vpc.db_subnet_group
+}
