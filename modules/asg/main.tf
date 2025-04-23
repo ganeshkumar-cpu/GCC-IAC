@@ -1,40 +1,61 @@
-resource "aws_launch_configuration" "this" {
-  name                  = var.name
-  image_id              = var.ami_id
-  instance_type         = var.instance_type
-  security_groups      = var.security_group_ids
-  user_data             = var.user_data
-  key_name              = var.key_name
-  root_block_device {
-    volume_size = var.root_volume_size
-    volume_type = "gp2"
+resource "aws_launch_template" "lt" {
+  name_prefix   = "${var.name}-lt"
+  image_id      = "ami-0522ab6e1ddcc7055"  # Example AMI
+  instance_type = var.instance_type
+  key_name      = "GRSE-key"
+
+  network_interfaces {
+    associate_public_ip_address = true
+    security_groups = [aws_security_group.sg.id]
+  }
+
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      volume_size = 50
+      volume_type = "gp3"
+    }
   }
 }
 
-resource "aws_autoscaling_group" "this" {
-  desired_capacity     = var.desired_capacity
-  max_size             = var.max_size
-  min_size             = var.min_size
-  vpc_zone_identifier  = var.subnet_ids
-  launch_configuration = aws_launch_configuration.this.id
-  target_group_arns    = var.target_group_arns
-  health_check_type    = "EC2"
-  health_check_grace_period = 300
-  force_delete         = true
-
-  tags = [
-    {
-      key                 = "Name"
-      value               = var.name
-      propagate_at_launch = true
-    }
-  ]
+resource "aws_autoscaling_group" "asg" {
+  name                      = "${var.name}-asg"
+  max_size                  = 1
+  min_size                  = 1
+  desired_capacity          = var.desired_capacity
+  vpc_zone_identifier       = var.subnet_ids
+  launch_template {
+    id      = aws_launch_template.lt.id
+    version = "$Latest"
+  }
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
-output "asg_name" {
-  value = aws_autoscaling_group.this.name
-}
+resource "aws_security_group" "sg" {
+  name        = "${var.name}-sg"
+  description = "${var.environment} security group"
+  vpc_id      = var.vpc_id
 
-output "asg_id" {
-  value = aws_autoscaling_group.this.id
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
