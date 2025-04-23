@@ -3,6 +3,7 @@ resource "aws_launch_template" "lt" {
   image_id      = "ami-0522ab6e1ddcc7055"  # Example AMI
   instance_type = var.instance_type
   key_name      = "GRSE-key"
+  vpc_security_group_ids = var.security_group_ids
 
   network_interfaces {
     associate_public_ip_address = true
