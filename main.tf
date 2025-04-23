@@ -47,3 +47,45 @@ module "dev_db" {
   subnet_ids           = var.db_subnet_ids
   vpc_id               = var.vpc_id
 }
+module "prod_sg" {
+  source = "./modules/security_group"
+  name   = "prod-server-sg"
+  vpc_id = var.vpc_id
+
+  ingress_rules = [
+    {
+      from_port   = 22
+      to_port     = 22
+      protocol    = "tcp"
+      cidr_blocks = ["YOUR.IP.ADDRESS/32"]
+    },
+    {
+      from_port   = 80
+      to_port     = 80
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    },
+    {
+      from_port   = 443
+      to_port     = 443
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  ]
+}
+
+module "dev_sg" {
+  source = "./modules/security_group"
+  name   = "dev-server-sg"
+  vpc_id = var.vpc_id
+
+  ingress_rules = [
+    {
+      from_port   = 22
+      to_port     = 22
+      protocol    = "tcp"
+      cidr_blocks = ["YOUR.IP.ADDRESS/32"]
+    }
+  ]
+}
+
