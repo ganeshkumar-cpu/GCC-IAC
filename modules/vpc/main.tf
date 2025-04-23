@@ -1,4 +1,4 @@
-resource "aws_vpc" "this" {
+resource "aws_vpc" "main" {
   cidr_block = var.cidr_block
   enable_dns_support = true
   enable_dns_hostnames = true
@@ -7,112 +7,41 @@ resource "aws_vpc" "this" {
   }
 }
 
-resource "aws_subnet" "public_ap_south_1a" {
-  vpc_id     = aws_vpc.this.id
-  cidr_block = "10.0.1.0/24"
-  availability_zone = "ap-south-1a"
+resource "aws_subnet" "public_subnet_1" {
+  vpc_id     = aws_vpc.main.id
+  cidr_block = var.public_subnet_cidrs[0]
+  availability_zone = var.azs[0]
   map_public_ip_on_launch = true
   tags = {
-    Name = "gcc-vpc-facial-subnet-public1-ap-south-1a"
+    Name = "Public Subnet 1"
   }
 }
 
-resource "aws_subnet" "private_ap_south_1a" {
-  vpc_id     = aws_vpc.this.id
-  cidr_block = "10.0.2.0/24"
-  availability_zone = "ap-south-1a"
-  tags = {
-    Name = "gcc-vpc-facial-subnet-private1-ap-south-1a"
-  }
-}
-
-resource "aws_subnet" "public_ap_south_1b" {
-  vpc_id     = aws_vpc.this.id
-  cidr_block = "10.0.101.0/24"
-  availability_zone = "ap-south-1b"
+resource "aws_subnet" "public_subnet_2" {
+  vpc_id     = aws_vpc.main.id
+  cidr_block = var.public_subnet_cidrs[1]
+  availability_zone = var.azs[1]
   map_public_ip_on_launch = true
   tags = {
-    Name = "gcc-vpc-facial-subnet-public2-ap-south-1b"
+    Name = "Public Subnet 2"
   }
 }
 
-resource "aws_subnet" "private_ap_south_1b" {
-  vpc_id     = aws_vpc.this.id
-  cidr_block = "10.0.102.0/24"
-  availability_zone = "ap-south-1b"
+resource "aws_subnet" "private_subnet_1" {
+  vpc_id     = aws_vpc.main.id
+  cidr_block = var.private_subnet_cidrs[0]
+  availability_zone = var.azs[0]
   tags = {
-    Name = "gcc-vpc-facial-subnet-private2-ap-south-1b"
+    Name = "Private Subnet 1"
   }
 }
 
-resource "aws_route_table" "public_rtb" {
-  vpc_id = aws_vpc.this.id
+resource "aws_subnet" "private_subnet_2" {
+  vpc_id     = aws_vpc.main.id
+  cidr_block = var.private_subnet_cidrs[1]
+  availability_zone = var.azs[1]
   tags = {
-    Name = "gcc-vpc-facial-rtb-public"
+    Name = "Private Subnet 2"
   }
 }
 
-resource "aws_route_table" "private_rtb_ap_south_1a" {
-  vpc_id = aws_vpc.this.id
-  tags = {
-    Name = "gcc-vpc-facial-rtb-private1-ap-south-1a"
-  }
-}
-
-resource "aws_route_table" "private_rtb_ap_south_1b" {
-  vpc_id = aws_vpc.this.id
-  tags = {
-    Name = "gcc-vpc-facial-rtb-private2-ap-south-1b"
-  }
-}
-
-resource "aws_internet_gateway" "igw" {
-  vpc_id = aws_vpc.this.id
-  tags = {
-    Name = "gcc-vpc-facial-igw"
-  }
-}
-
-resource "aws_nat_gateway" "nat_gateway" {
-  allocation_id = aws_eip.nat_eip.id
-  subnet_id     = aws_subnet.public_ap_south_1a.id
-  depends_on    = [aws_internet_gateway.igw]
-}
-
-resource "aws_eip" "nat_eip" {
-  vpc = true
-}
-
-resource "aws_route" "public_route" {
-  route_table_id         = aws_route_table.public_rtb.id
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.igw.id
-}
-
-resource "aws_route" "private_route" {
-  route_table_id         = aws_route_table.private_rtb_ap_south_1a.id
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.nat_gateway.id
-}
-
-resource "aws_route" "private_route_1b" {
-  route_table_id         = aws_route_table.private_rtb_ap_south_1b.id
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.nat_gateway.id
-}
-
-output "vpc_id" {
-  value = aws_vpc.this.id
-}
-
-output "public_subnets" {
-  value = [aws_subnet.public_ap_south_1a.id, aws_subnet.public_ap_south_1b.id]
-}
-
-output "private_subnets" {
-  value = [aws_subnet.private_ap_south_1a.id, aws_subnet.private_ap_south_1b.id]
-}
-
-output "vpc_cidr" {
-  value = aws_vpc.this.cidr_block
-}
