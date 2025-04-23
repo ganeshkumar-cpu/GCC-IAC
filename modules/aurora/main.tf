@@ -38,5 +38,3 @@ resource "aws_security_group" "db_sg" {
   description = "Aurora DB SG"
   vpc_id      = var.vpc_id
 }
-~
-~
